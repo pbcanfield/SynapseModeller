@@ -1,0 +1,28 @@
+{load_file("stdrun.hoc")}
+{load_file("nrngui.hoc")}
+
+//Loading mechanisms in other folder
+nrn_load_dll("*")
+
+// Load Template(s) (some may not be needed if a folder was specified and may cause problems, remove as needed)
+{load_file("*")}
+
+tstop = 1000
+v_init = * 
+objref Cell // declare the primary cell object
+Cell = new *() // build the neuron from template
+
+
+objref stim
+objref nc
+objref syn
+
+objref vclamp[NumVClamps]
+
+target.soma syn = new *(0.9)
+
+***
+syn.* = *
+***
+
+nc = new NetCon(stim[0], syn, 0, 0, 1)
