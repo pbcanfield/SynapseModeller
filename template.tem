@@ -9,20 +9,28 @@ nrn_load_dll("*")
 
 tstop = 1000
 v_init = * 
-objref Cell // declare the primary cell object
-Cell = new *() // build the neuron from template
+objref cell // declare the primary cell object
+cell = new *() // build the neuron from template
 
 
 objref stim
 objref nc
 objref syn
 
-objref vclamp[NumVClamps]
+stim = new NetStim(0.5)
+stim.interval=12 // ms (mean) time between spikes
+stim.number=12 //(average) number of spikes
+stim.start=50 // ms (most likely) start time of first spike
+stim.noise=0.0
 
-target.soma syn = new *(0.9)
+objref 
 
-***
-syn.* = *
-***
+Cell.soma vclamp = new SEClamp(0.5)
+vclamp.amp1 = v_init
+vclamp.dur1 = 999
 
-nc = new NetCon(stim[0], syn, 0, 0, 1)
+cell.soma syn = new *(0.9)
+
+syn.@ = %
+
+nc = new NetCon(stim, syn, 0, 0, 1)
