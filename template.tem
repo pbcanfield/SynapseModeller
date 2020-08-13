@@ -1,11 +1,10 @@
-{load_file("stdrun.hoc")}
-{load_file("nrngui.hoc")}
+load_file("stdrun.hoc")
 
 //Loading mechanisms in other folder
 nrn_load_dll("*")
 
 // Load Template(s) (some may not be needed if a folder was specified and may cause problems, remove as needed)
-{load_file("*")}
+load_file("*")
 
 tstop = 1000
 v_init = * 
@@ -18,19 +17,23 @@ objref nc
 objref syn
 
 stim = new NetStim(0.5)
-stim.interval=12 // ms (mean) time between spikes
-stim.number=12 //(average) number of spikes
-stim.start=50 // ms (most likely) start time of first spike
+stim.interval=* // ms (mean) time between spikes
+stim.number=* //(average) number of spikes
+stim.start=* // ms (most likely) start time of first spike
 stim.noise=0.0
 
-objref 
-
-Cell.soma vclamp = new SEClamp(0.5)
-vclamp.amp1 = v_init
-vclamp.dur1 = 999
 
 cell.soma syn = new *(0.9)
 
 syn.@ = %
 
 nc = new NetCon(stim, syn, 0, 0, 1)
+
+//Set up two vectors to track membrane potential and time
+objectvar membrane 
+objectvar time
+membrane = new Vector()
+time = new Vector()
+
+time.record(&t)
+membrane.record(&cell.soma.v(0.5))
