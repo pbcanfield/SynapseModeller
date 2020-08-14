@@ -9,6 +9,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 
 import numpy as np
+import re
 
 from sys import platform
 import os
@@ -16,20 +17,18 @@ import os
 class SynapseUI(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self,*args,**kwargs)
+
+    def initialize(self, simulator):
         container = tk.Frame(self)
         self.geometry('1000x500')
-
         container.pack(fill=tk.BOTH,expand=True)
 
         self.frames = {}
-        self.frames[StartPage] = StartPage(container,self)
-
+        self.frames[StartPage] = StartPage(container,self, simulator)
         self.frames[StartPage].grid(row=0,column=0,sticky='nsew')
     
         self.show_frame(StartPage)
-
-    def set_simulator(self, sim):
-        self.frames[StartPage].simulator = sim 
+        
 
     def show_frame(self, controller):
         frame = self.frames[controller]
@@ -72,8 +71,10 @@ class StartPage(tk.Frame):
     #Create the run button.
     run_button = None
 
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, simulator):
         tk.Frame.__init__(self,parent)
+
+        self.simulator = simulator
 
         #Create the synapse selection system.
         self.synapse_label_text = tk.StringVar(self)
@@ -218,7 +219,17 @@ class StartPage(tk.Frame):
 class ParameterPanel(tk.Frame):
 
     parent_ui = None
+
+    #GUI elements.
     run_button = None
+
+    tstop_feild = None
+    vinit_feild = None
+
+    #Netstim feilds.
+    stim_number_feild = None
+    stim_interval_feild = None
+    stim_start_feild = None
 
     #Stores the parameters that can be changed in the synapse file.
     parameters = {}
@@ -230,7 +241,50 @@ class ParameterPanel(tk.Frame):
 
         #Create run button.
         self.run_button = tk.Button(self, text='Run', command=self.run_simulation)
-        self.run_button.pack()
+        
+
+        #Create input fields for v_init and tstop.
+        #tstop.
+        tstop_label = tk.Label(self, text = 'tstop: ')
+        self.tstop_feild = tk.Entry(self)
+        self.tstop_feild.insert(0,str(self.parent_ui.simulator.tstop))
+    
+        #vinit.
+        vinit_label = tk.Label(self, text = 'v_init: ')
+        self.vinit_feild = tk.Entry(self)
+        self.vinit_feild.insert(0,str(self.parent_ui.simulator.resting))
+
+        #Netstim feilds.
+        stim_number_label = tk.Label(self, text = 'Stim Count: ')
+        self.stim_number_feild = tk.Entry(self)
+        self.stim_number_feild.insert(0,str(self.parent_ui.simulator.stim_number))
+        
+        stim_interval_label = tk.Label(self, text = 'Stim Count: ')
+        self.stim_interval_feild = tk.Entry(self)
+        self.stim_interval_feild.insert(0,str(self.parent_ui.simulator.stim_interval))
+        
+        stim_start_label = tk.Label(self, text = 'Stim Count: ')
+        self.stim_start_feild = tk.Entry(self)
+        self.stim_start_feild.insert(0,str(self.parent_ui.simulator.stim_start))
+
+        #place everything.
+        self.run_button.grid(column = 0, row = 0, sticky = 'n')
+        
+        tstop_label.grid(column = 1, row = 0, sticky = 'n')
+        self.tstop_feild.grid(column = 2, row = 0, sticky = 'n')
+
+        vinit_label.grid(column = 1, row = 1, sticky = 'n')
+        self.vinit_feild.grid(column = 2, row = 1, sticky = 'n')
+
+        stim_number_label.grid(column = 1, row = 2, sticky = 'n')
+        self.stim_number_feild.grid(column = 2, row = 2, sticky = 'n')
+
+        stim_interval_label.grid(column = 1, row = 3, sticky = 'n')
+        self.stim_interval_feild.grid(column = 2, row = 3, sticky = 'n')
+
+        stim_start_label.grid(column = 1, row = 4, sticky = 'n')
+        self.stim_start_feild.grid(column = 2, row = 4, sticky = 'n')
+
 
     
     def run_simulation(self):
@@ -245,7 +299,15 @@ class ParameterPanel(tk.Frame):
 
         #Chech if the simulator has already been initialized, if not initialize it
         #then run.
-      
+
+        #replace all the dashes with minus signes.
+        self.parent_ui.simulator.resting = float(re.sub(u'\u2212','-',self.vinit_feild.get()))
+        self.parent_ui.simulator.tstop = int(re.sub(u'\u2212','-',self.tstop_feild.get()))
+        
+        self.parent_ui.simulator.stim_number = int(self.stim_number_feild.get())
+        self.parent_ui.simulator.stim_interval = int(self.stim_interval_feild.get())
+        self.parent_ui.simulator.stim_start = int(self.stim_start_feild.get())
+
         self.parent_ui.simulator.set_parameters(self.parent_ui.hoc_dir,
                                                 self.parent_ui.mech_dir,
                                                 self.parent_ui.synapse_dir,

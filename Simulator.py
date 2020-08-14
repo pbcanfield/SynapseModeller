@@ -33,7 +33,7 @@ class Simulator:
         #On linux this path should be the x86_64 folder.
         #On windows this path should be nrnmechdll.
         if platform == "linux" or platform == "linux2" or platform == "darwin":
-            self.mech_dir = os.path.join(mech_dir, "x86_64/.libs/libnrnmech.so")
+            self.mech_dir = os.path.join(mech_dir, ".libs/libnrnmech.so")
         else:
             self.mech_dir = mech_dir
 
