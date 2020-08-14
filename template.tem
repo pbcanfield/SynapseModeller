@@ -6,7 +6,7 @@ nrn_load_dll("*")
 // Load Template(s) (some may not be needed if a folder was specified and may cause problems, remove as needed)
 load_file("*")
 
-tstop = 1000
+tstop = *
 v_init = * 
 objref cell // declare the primary cell object
 cell = new *() // build the neuron from template
@@ -17,11 +17,10 @@ objref nc
 objref syn
 
 stim = new NetStim(0.5)
-stim.interval=* // ms (mean) time between spikes
-stim.number=* //(average) number of spikes
-stim.start=* // ms (most likely) start time of first spike
-stim.noise=0.0
-
+stim.interval = * // ms (mean) time between spikes
+stim.number = * //(average) number of spikes
+stim.start = * // ms (most likely) start time of first spike
+stim.noise = 0.0
 
 cell.soma syn = new *(0.9)
 
@@ -29,11 +28,17 @@ syn.@ = %
 
 nc = new NetCon(stim, syn, 0, 0, 1)
 
+
 //Set up two vectors to track membrane potential and time
 objectvar membrane 
 objectvar time
+objectvar input[*]
 membrane = new Vector()
 time = new Vector()
 
+input[^] = new Vector()
+
 time.record(&t)
 membrane.record(&cell.soma.v(0.5))
+
+input[^].record(&syn.~)

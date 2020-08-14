@@ -5,7 +5,7 @@ def main():
 
     
 
-    
+    '''
     simulator = sim.Simulator()
 
     simulator.set_parameters('./cell/BC.hoc','./cell', 'synapse.json', './cell/modfiles/pyr2pyr.mod')
@@ -22,7 +22,7 @@ def main():
     SynUI.set_simulator(simulator)
     
     SynUI.mainloop()
-    '''
+    
     
 
 

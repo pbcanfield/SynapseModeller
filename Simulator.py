@@ -7,7 +7,8 @@ import numpy as np
 class Simulator:
 
     #Cell parameters.
-    resting = -70
+    resting = -61.1 #mV
+    tstop = 400 #ms
 
     #netstim parameters.
     stim_number = 12
@@ -16,6 +17,8 @@ class Simulator:
 
     membrane_potential = None
     time = None
+
+    num_currents = 0
     
     '''
     Requires all 4 of these paremeters before the simulation is run.
@@ -43,12 +46,21 @@ class Simulator:
         core = 0
         synapseobject = ''
         mod_list = []
+
+        current_names = []
         #Read through the synapse mod file and find the object name.
         with open(self.synapse_mod, 'r') as file: 
             
             for line in file:
                 if 'POINT_PROCESS' in line:
                     synapseobject = line.split(' ')[1].replace('\n','')
+
+                if 'NONSPECIFIC_CURRENT' in line:
+                    keys = line.split(' ')
+
+                    self.num_currents = len(keys) - 1
+                    for key in keys[1:]:
+                        current_names.append(key.replace(' ','').replace('\n','').replace(',','')) #probably the worst way of doing this
                 
                 if 'RANGE' in line:
                     parameters = line.split(' ')
@@ -66,16 +78,11 @@ class Simulator:
                     break
             file.close()
 
-        mapping = {
-            0:self.mech_dir,
-            1:self.cell_dir,
-            2:str(self.resting),
-            3:cellobject,
-            4:str(self.stim_interval),
-            5:str(self.stim_number),
-            6:str(self.stim_start),
-            7:synapseobject,
-        }
+        mapping = [
+            self.mech_dir         , self.cell_dir       , str(self.tstop)        ,
+            str(self.resting)     , cellobject          , str(self.stim_interval),
+            str(self.stim_number) , str(self.stim_start), synapseobject          ,
+            str(self.num_currents)                                                ]
 
         synapse_parameters = {}
         with open(self.synapse_json, 'r') as file:
@@ -97,16 +104,34 @@ class Simulator:
                 elif '*' in line:
                     #Regular parameters.
                     output.write(line.replace('*',mapping[core]))
-                    core += 1    
+                    core += 1
+                
+                elif '^' in line:
+                    #Synapse recording objects
+                    if '~' in line:
+                        for i in range(self.num_currents):
+                            output.write(line.replace('^',str(i)).replace('~',current_names[i]) + '\n')
+                    else:
+                        for i in range(self.num_currents):
+                            output.write(line.replace('^',str(i)))
+                
                 else:
                     output.write(line)
 
             output.close()
             file.close()
 
-    def get_membrane_vs_time(self):
-        print(type(h.membrane))
-        return (list(h.membrane) , list(h.time))
+    def get_membrane(self):
+        return list(h.membrane)
+
+    def get_input(self):
+        return list(h.input)
+
+    def get_time(self):
+        return list(h.time)
+    
+    def get_synapse_current(self, id):
+        return list(h.input[id])
 
     def load_core(self):
         h.load_file('core.hoc')

@@ -65,6 +65,10 @@ class StartPage(tk.Frame):
     browse_mod_button = None
     mod_dir = None
 
+    #Canvases for both graphs
+    injcanvas = None
+    memcanvas = None
+
     #Create the run button.
     run_button = None
 
@@ -119,35 +123,35 @@ class StartPage(tk.Frame):
         self.memvtime = self.memgraph.add_subplot(111)
 
         #Create the canvas for the membrane vs time graph.
-        memcanvas = FigureCanvasTkAgg(self.memgraph,self)
-        memcanvas.draw()
-        memcanvas.get_tk_widget().grid(column = 0, row = 1)
+        self.memcanvas = FigureCanvasTkAgg(self.memgraph,self)
+        self.memcanvas.draw()
+        self.memcanvas.get_tk_widget().grid(column = 0, row = 1)
 
         #Injection graph
         self.injgraph = Figure(figsize=(5,2), dpi=100)
         self.injvtime = self.injgraph.add_subplot(111)
 
         #Create the canvas for the current injection vs time graph.
-        injcanvas = FigureCanvasTkAgg(self.injgraph,self)
-        injcanvas.draw()
-        injcanvas.get_tk_widget().grid(column = 0, row = 3)
+        self.injcanvas = FigureCanvasTkAgg(self.injgraph,self)
+        self.injcanvas.draw()
+        self.injcanvas.get_tk_widget().grid(column = 0, row = 3)
         
         #The matplotlib toolbar needs to be packed in and cannout use the grid geometry
         #manager. To fix this, create an empty frame and put the
         #stuff on this frame and pack it in. Then display the frame on the grid.    
         memtoolbar_frame = tk.Frame(master=self)
         memtoolbar_frame.grid(column=0,row=0,sticky='w')
-        memtoolbar = NavigationToolbar2Tk(memcanvas,memtoolbar_frame)
+        memtoolbar = NavigationToolbar2Tk(self.memcanvas,memtoolbar_frame)
         memtoolbar.update()
 
         injtoolbar_frame = tk.Frame(master=self)
         injtoolbar_frame.grid(column=0,row=2,sticky='w')
-        injtoolbar = NavigationToolbar2Tk(injcanvas,injtoolbar_frame)
+        injtoolbar = NavigationToolbar2Tk(self.injcanvas,injtoolbar_frame)
         injtoolbar.update()
 
         #Add in the parameter panel.
         panel = ParameterPanel(self)
-        panel.grid(column=1, row=4, sticky='ne')
+        panel.grid(column=3, row=0, sticky='nw')
         panel.update()
 
     def browseFiles(self,file_type):
@@ -200,15 +204,24 @@ class StartPage(tk.Frame):
             self.mod_label_text.set('Synapse file: ' + fileName)
 
     def update(self):
-        memvtime_data = self.simulator.get_membrane_vs_time()
-        self.memvtime.plot(memvtime_data[0],memvtime_data[1])
+        time = self.simulator.get_time()
+        self.memvtime.plot(time,self.simulator.get_membrane())
+        
+        for i in range(self.simulator.num_currents):
+            self.injvtime.plot(time,self.simulator.get_synapse_current(i))
+        
+        #Redraw both graphs.
+        self.memcanvas.draw()
+        self.injcanvas.draw()
 
 
 class ParameterPanel(tk.Frame):
 
     parent_ui = None
-
     run_button = None
+
+    #Stores the parameters that can be changed in the synapse file.
+    parameters = {}
 
     def __init__(self,parent):
         tk.Frame.__init__(self,parent)
@@ -224,8 +237,8 @@ class ParameterPanel(tk.Frame):
 
         #Check that each directory has been selected properly.
         if self.parent_ui.synapse_dir == None or \
-           self.parent_ui.hoc_dir == None or \
-           self.parent_ui.mech_dir == None or \
+           self.parent_ui.hoc_dir == None or     \
+           self.parent_ui.mech_dir == None or    \
            self.parent_ui.mod_dir == None:
             return
 
