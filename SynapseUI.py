@@ -20,7 +20,7 @@ class SynapseUI(tk.Tk):
 
     def initialize(self, simulator):
         container = tk.Frame(self)
-        self.geometry('1000x500')
+        self.geometry('1100x600')
         container.pack(fill=tk.BOTH,expand=True)
 
         self.frames = {}
@@ -44,38 +44,38 @@ class StartPage(tk.Frame):
     synapse_label_text = None
     synapse_label = None
     browse_synapse_button = None
-    synapse_dir = None
+    synapse_dir = ''
 
     #Cell label and button
     hoc_label_text = None
     hoc_label = None
     browse_hoc_button = None
-    hoc_dir = None
+    hoc_dir = ''
 
     #Mechanism label and button
     mech_label_text = None
     mech_label = None
     browse_mech_button = None
-    mech_dir = None
+    mech_dir = ''
 
     #Synapse mod label and button
     mod_label_text = None
     mod_label = None
     browse_mod_button = None
-    mod_dir = None
+    mod_dir = ''
 
     #Canvases for both graphs
     injcanvas = None
     memcanvas = None
 
-    #Create the run button.
-    run_button = None
+    #Create the parameter panel.
+    panel = None
 
     def __init__(self, parent, controller, simulator):
         tk.Frame.__init__(self,parent)
 
         self.simulator = simulator
-
+        
         #Create the synapse selection system.
         self.synapse_label_text = tk.StringVar(self)
         self.synapse_label_text.set('Synapse template file:')
@@ -151,9 +151,9 @@ class StartPage(tk.Frame):
         injtoolbar.update()
 
         #Add in the parameter panel.
-        panel = ParameterPanel(self)
-        panel.grid(column=3, row=0, sticky='nw')
-        panel.update()
+        self.panel = ParameterPanel(self)
+        self.panel.grid(column=3, row=0, sticky='nw')
+        self.panel.update()
 
     def browseFiles(self,file_type):
         
@@ -204,14 +204,34 @@ class StartPage(tk.Frame):
             self.mod_dir = file_directory
             self.mod_label_text.set('Synapse file: ' + fileName)
 
+        #If all the synapse files have been selected. Generate the core then clean up to populate the synapse parameter list.
+        if not (self.synapse_dir == '' or self.mod_dir == ''):
+            self.simulator.synapse_json = self.synapse_dir
+            self.simulator.synapse_mod = self.mod_dir
+            
+            #Generate the simulator's synpase parameter dict.
+            self.simulator.generate_synapse_dict()
+
+            #now populate the parameter panel synapse parameters.
+            self.panel.generate_synapse_panel()
+
+    def plot_graphs(self):
+        #update simulator data.
+        self.simulator.update_data()
+
+        self.memvtime.plot(self.simulator.time,self.simulator.membrane_potential)
+        
+        for key in self.simulator.currents:
+            self.injvtime.plot(self.simulator.time,self.simulator.currents[key])
+
+        self.memcanvas.draw()
+        self.injcanvas.draw()
+
     def update(self):
-        time = self.simulator.get_time()
-        self.memvtime.plot(time,self.simulator.get_membrane())
-        
-        for i in range(self.simulator.num_currents):
-            self.injvtime.plot(time,self.simulator.get_synapse_current(i))
-        
-        #Redraw both graphs.
+
+        #update simulator data.
+        self.simulator.update_data()        
+
         self.memcanvas.draw()
         self.injcanvas.draw()
 
@@ -231,8 +251,13 @@ class ParameterPanel(tk.Frame):
     stim_interval_feild = None
     stim_start_feild = None
 
+    #parameter feilds.
+    parameter_feilds = []
+
     #Stores the parameters that can be changed in the synapse file.
     parameters = {}
+
+    first_run = True
 
     def __init__(self,parent):
         tk.Frame.__init__(self,parent)
@@ -242,7 +267,6 @@ class ParameterPanel(tk.Frame):
         #Create run button.
         self.run_button = tk.Button(self, text='Run', command=self.run_simulation)
         
-
         #Create input fields for v_init and tstop.
         #tstop.
         tstop_label = tk.Label(self, text = 'tstop: ')
@@ -259,11 +283,11 @@ class ParameterPanel(tk.Frame):
         self.stim_number_feild = tk.Entry(self)
         self.stim_number_feild.insert(0,str(self.parent_ui.simulator.stim_number))
         
-        stim_interval_label = tk.Label(self, text = 'Stim Count: ')
+        stim_interval_label = tk.Label(self, text = 'Stim Interval: ')
         self.stim_interval_feild = tk.Entry(self)
         self.stim_interval_feild.insert(0,str(self.parent_ui.simulator.stim_interval))
         
-        stim_start_label = tk.Label(self, text = 'Stim Count: ')
+        stim_start_label = tk.Label(self, text = 'Stim Start: ')
         self.stim_start_feild = tk.Entry(self)
         self.stim_start_feild.insert(0,str(self.parent_ui.simulator.stim_start))
 
@@ -285,15 +309,28 @@ class ParameterPanel(tk.Frame):
         stim_start_label.grid(column = 1, row = 4, sticky = 'n')
         self.stim_start_feild.grid(column = 2, row = 4, sticky = 'n')
 
+    def generate_synapse_panel(self):
+    #Go through the parameter dict and create a feild for each one.
+        rowcount = 5
+        for name in self.parent_ui.simulator.synapse_parameters:
+            label = tk.Label(self, text= name + ': ')
+            label.grid(column = 1, row = rowcount)
 
-    
+            entry = tk.Entry(self)
+            entry.insert(0,str(self.parent_ui.simulator.synapse_parameters[name]))
+            entry.grid(column = 2, row = rowcount)
+            self.parameter_feilds.append(entry)
+
+            rowcount += 1
+
+
     def run_simulation(self):
 
         #Check that each directory has been selected properly.
-        if self.parent_ui.synapse_dir == None or \
-           self.parent_ui.hoc_dir == None or     \
-           self.parent_ui.mech_dir == None or    \
-           self.parent_ui.mod_dir == None:
+        if self.parent_ui.synapse_dir == '' or \
+           self.parent_ui.hoc_dir == '' or     \
+           self.parent_ui.mech_dir == '' or    \
+           self.parent_ui.mod_dir == '':
             return
 
 
@@ -308,12 +345,28 @@ class ParameterPanel(tk.Frame):
         self.parent_ui.simulator.stim_interval = int(self.stim_interval_feild.get())
         self.parent_ui.simulator.stim_start = int(self.stim_start_feild.get())
 
+
+        #Cycle through the synapse entry feilds and set the values in the simulator.
+        for feild,key in zip(self.parameter_feilds,self.parent_ui.simulator.synapse_parameters):
+            self.parent_ui.simulator.synapse_parameters[key] = float(re.sub(u'\u2212','-',feild.get()))
+
+
         self.parent_ui.simulator.set_parameters(self.parent_ui.hoc_dir,
                                                 self.parent_ui.mech_dir,
                                                 self.parent_ui.synapse_dir,
                                                 self.parent_ui.mod_dir)
 
         
+        #if this is the first run, plot the graphs.
+        if self.first_run == True:
+            self.parent_ui.simulator.generate_core_init('template.tem')
+            self.parent_ui.simulator.initialize_simulator()
+
+            self.parent_ui.plot_graphs()            
+            self.first_run = False
+        else:
+            #Now update all the graphics.
+            self.parent_ui.update()
 
         #Now run the simulation.
         self.parent_ui.simulator.generate_core_simulator('template.tem')
@@ -321,8 +374,11 @@ class ParameterPanel(tk.Frame):
         self.parent_ui.simulator.run_simulation()
         self.parent_ui.simulator.clean_up()
 
-        #Now update all the graphics.
-        self.parent_ui.update()
+        
+
+        
+
+        
 
 
 
