@@ -207,7 +207,7 @@ class Simulator:
 
     def initialize_simulator(self):
         h.load_file('init.hoc')
-        #os.remove('init.hoc')
+        os.remove('init.hoc')
 
     def load_core(self):
         h.load_file('core'+ str(self.core_suffix) +'.hoc')

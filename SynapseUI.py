@@ -152,7 +152,7 @@ class StartPage(tk.Frame):
 
         #Add in the parameter panel.
         self.panel = ParameterPanel(self)
-        self.panel.grid(column=3, row=0, sticky='nw')
+        self.panel.grid(column=3, row=0, rowspan= 100, columnspan = 4, sticky='nw')
         self.panel.update()
 
     def browseFiles(self,file_type):
@@ -366,7 +366,7 @@ class ParameterPanel(tk.Frame):
             self.parent_ui.simulator.generate_core_simulator('template.tem')
             self.parent_ui.simulator.load_core()
             self.parent_ui.simulator.run_simulation()
-            #self.parent_ui.simulator.clean_up()
+            self.parent_ui.simulator.clean_up()
 
             self.parent_ui.plot_graphs()            
             self.first_run = False
