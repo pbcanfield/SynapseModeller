@@ -11,20 +11,25 @@
 #objectvar stim
 #objectvar nc
 #objectvar syn
+#objectvar vclamp
+#stim = new NetStim(0.5)
+#stim.noise = 0.0
+#cell = new *()
+#cell.soma vclamp = new SEClamp(0.5) 
+#cell.soma syn = new *(0.9)
+#nc = new NetCon(stim, syn, 0, 0, 1)
+#time.record(&t)
+#membrane.record(&cell.soma.v(0.5))
+#input[^].record(&syn.~)
 proc run*() {
     tstop = *
     v_init = * 
-    cell = new *() 
-    stim = new NetStim(0.5)
-    nc = new NetCon(stim, syn, 0, 0, 1)
+    vclamp.amp1 = v_init
+    vclamp.dur1 = 999
     stim.interval = *
     stim.number = * 
     stim.start = *
-    stim.noise = 0.0
-    cell.soma syn = new *(0.9)
     syn.@ = %
-    time.record(&t)
-    membrane.record(&cell.soma.v(0.5))
-    input[^].record(&syn.~)
     run()
+    printf("Run Complete\n")
 }

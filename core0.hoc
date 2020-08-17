@@ -1,0 +1,38 @@
+proc run0() {
+    tstop = 400
+    v_init = -61.1 
+    vclamp.amp1 = v_init
+    vclamp.dur1 = 999
+    stim.interval = 12
+    stim.number = 12 
+    stim.start = 100
+    syn.AlphaTmax_ampa = 0.9
+    syn.Beta_ampa = 0.2
+    syn.Cdur_ampa = 2.0
+    syn.gbar_ampa = 0.0017
+    syn.Erev_ampa = 0.0
+    syn.AlphaTmax_nmda = 0.088
+    syn.Beta_nmda = 0.0033
+    syn.Cdur_nmda = 10.0
+    syn.gbar_nmda = 0.0017
+    syn.Erev_nmda = 0.0
+    syn.initW = 0.4
+    syn.Wmax = 2.0
+    syn.Wmin = 0.25
+    syn.lambda1 = 5.0
+    syn.lambda2 = 0.01
+    syn.threshold1 = 0.1
+    syn.threshold2 = 0.2
+    syn.tauD1 = 130.0
+    syn.d1 = 0.7
+    syn.tauD2 = 400.0
+    syn.d2 = 0.92
+    syn.tauF = 1.0
+    syn.f = 1.0
+    syn.bACH = -0.85
+    syn.aDA = 1.0
+    syn.bDA = 0.0
+    syn.wACH = 0.0
+    run()
+    printf("Run Complete\n")
+}

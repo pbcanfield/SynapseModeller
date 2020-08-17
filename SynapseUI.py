@@ -362,17 +362,25 @@ class ParameterPanel(tk.Frame):
             self.parent_ui.simulator.generate_core_init('template.tem')
             self.parent_ui.simulator.initialize_simulator()
 
+            #Now run the simulation.
+            self.parent_ui.simulator.generate_core_simulator('template.tem')
+            self.parent_ui.simulator.load_core()
+            self.parent_ui.simulator.run_simulation()
+            #self.parent_ui.simulator.clean_up()
+
             self.parent_ui.plot_graphs()            
             self.first_run = False
         else:
+            #Now run the simulation.
+            self.parent_ui.simulator.generate_core_simulator('template.tem')
+            self.parent_ui.simulator.load_core()
+            self.parent_ui.simulator.run_simulation()
+            #self.parent_ui.simulator.clean_up()
+
             #Now update all the graphics.
             self.parent_ui.update()
 
-        #Now run the simulation.
-        self.parent_ui.simulator.generate_core_simulator('template.tem')
-        self.parent_ui.simulator.load_core()
-        self.parent_ui.simulator.run_simulation()
-        self.parent_ui.simulator.clean_up()
+        
 
         
 

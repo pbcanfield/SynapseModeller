@@ -91,36 +91,6 @@ class Simulator:
                         self.currents[key.replace(' ','').replace('\n','').replace(',','')] = [] #probably the worst way of doing this
             file.close()
 
-        mapping = [
-            self.mech_dir,
-            self.cell_dir,
-            str(self.num_currents)
-        ]
-
-        with open(template_dir, 'r') as file:
-            core = 0
-            output = open('init.hoc', 'w')
-
-            for line in file:
-                if '#' in line:
-                    line = line.replace('#','')
-                    if '*' in line:
-                        output.write(line.replace('*',mapping[core]))
-                        core += 1
-                    elif '^' in line:
-                        for i in range(self.num_currents):
-                            output.write(line.replace('^',str(i)))
-                    else:
-                        output.write(line)
-
-            
-            output.close()
-            file.close()
-        
-    #Requires that all 4 directories have already been set and
-    #that generate_synapse_dict() has already been called.
-    def generate_core_simulator(self, template_dir):
-        core = 0
         synapseobject = ''
         #Read through the synapse mod file and find the object name.
         with open(self.synapse_mod, 'r') as file: 
@@ -141,14 +111,53 @@ class Simulator:
             file.close()
 
         mapping = [
+            self.mech_dir          ,
+            self.cell_dir          ,
+            str(self.num_currents) ,
+            cellobject             ,
+            synapseobject 
+
+        ]
+
+        with open(template_dir, 'r') as file:
+            core = 0
+            output = open('init.hoc', 'w')
+
+            for line in file:
+                if '#' in line:
+                    line = line.replace('#','')
+                    if '*' in line:
+                        output.write(line.replace('*',mapping[core]))
+                        core += 1
+                    elif '^' in line:
+                        #Synapse recording objects
+                        if '~' in line:
+                            for i,key in zip(range(self.num_currents),self.currents):
+                                output.write(line.replace('^',str(i)).replace('~',key))
+                        else:
+                            for i in range(self.num_currents):
+                                output.write(line.replace('^',str(i)))
+
+                    else:
+                        output.write(line)
+
+            
+            output.close()
+            file.close()
+        
+    #Requires that all 4 directories have already been set and
+    #that generate_synapse_dict() has already been called.
+    def generate_core_simulator(self, template_dir):
+        core = 0
+        
+
+        mapping = [
             str(self.core_suffix)  ,  
             str(self.tstop)        ,
-            str(self.resting)      , 
-            cellobject             , 
+            str(self.resting)      ,
             str(self.stim_interval),
             str(self.stim_number)  ,
-            str(self.stim_start)   , 
-            synapseobject          ,
+            str(self.stim_start)   ,
         ]
 
         with open(template_dir, 'r') as file:
@@ -170,20 +179,13 @@ class Simulator:
                     output.write(line.replace('*',mapping[core]))
                     core += 1
                 
-                elif '^' in line:
-                    #Synapse recording objects
-                    if '~' in line:
-                        for i,key in zip(range(self.num_currents),self.currents):
-                            output.write(line.replace('^',str(i)).replace('~',key))
-                    else:
-                        for i in range(self.num_currents):
-                            output.write(line.replace('^',str(i)))
+                
                 else:
                     output.write(line)
 
             output.close()
             file.close()
-
+            
     def get_membrane(self):
         return list(h.membrane)
 
@@ -205,7 +207,7 @@ class Simulator:
 
     def initialize_simulator(self):
         h.load_file('init.hoc')
-        os.remove('init.hoc')
+        #os.remove('init.hoc')
 
     def load_core(self):
         h.load_file('core'+ str(self.core_suffix) +'.hoc')
@@ -213,10 +215,11 @@ class Simulator:
     def run_simulation(self):
         h.finitialize(self.resting)
         h('run' + str(self.core_suffix) + '()')
+        self.core_suffix += 1
         
     def clean_up(self):
-        os.remove('core'+ str(self.core_suffix) +'.hoc')
-        self.core_suffix += 1
+        #Delete the previous core file.
+        os.remove('core'+ str(self.core_suffix - 1) +'.hoc')
 
 
 
