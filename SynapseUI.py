@@ -21,7 +21,7 @@ class SynapseUI(tk.Tk):
 
     def initialize(self, simulator):
         container = tk.Frame(self)
-        self.geometry('1100x600')
+        self.geometry('1150x650')
         container.pack(fill=tk.BOTH,expand=True)
 
         self.frames = {}

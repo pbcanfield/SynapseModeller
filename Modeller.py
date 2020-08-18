@@ -3,7 +3,7 @@ import Simulator as Sim
 
 def main():
 
-    SynUI = UI.SynapseUI(className='Synapse UI',)
+    SynUI = UI.SynapseUI(className='Synapse UI')
     SynUI.initialize(Sim.Simulator())
     SynUI.mainloop()
 
