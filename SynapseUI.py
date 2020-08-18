@@ -7,6 +7,7 @@ matplotlib.use("TkAgg")
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
 
 import numpy as np
 import re
@@ -68,6 +69,11 @@ class StartPage(tk.Frame):
     injcanvas = None
     memcanvas = None
 
+    #lines for each graph.
+    memline = None
+    timeline = None
+    currentline = []
+
     #Create the parameter panel.
     panel = None
 
@@ -75,7 +81,8 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self,parent)
 
         self.simulator = simulator
-        
+        plt.ion()
+
         #Create the synapse selection system.
         self.synapse_label_text = tk.StringVar(self)
         self.synapse_label_text.set('Synapse template file:')
@@ -219,18 +226,26 @@ class StartPage(tk.Frame):
         #update simulator data.
         self.simulator.update_data()
 
-        self.memvtime.plot(self.simulator.time,self.simulator.membrane_potential)
+        self.memline = self.memvtime.plot(self.simulator.time,self.simulator.membrane_potential)
         
         for key in self.simulator.currents:
-            self.injvtime.plot(self.simulator.time,self.simulator.currents[key])
+            self.currentline.append(self.injvtime.plot(self.simulator.time,self.simulator.currents[key]))
 
         self.memcanvas.draw()
         self.injcanvas.draw()
+
+
 
     def update(self):
 
         #update simulator data.
         self.simulator.update_data()        
+
+        self.memline.set_data(self.simulator.time, self.simulator.membrane_potentia)
+
+        for key,line in zip(self.simulator.currents, self.currentline):
+            line.set_data(self.simulator.time, self.simulator.currents[key])
+
 
         self.memcanvas.draw()
         self.injcanvas.draw()
@@ -375,10 +390,10 @@ class ParameterPanel(tk.Frame):
             self.parent_ui.simulator.generate_core_simulator('template.tem')
             self.parent_ui.simulator.load_core()
             self.parent_ui.simulator.run_simulation()
-            #self.parent_ui.simulator.clean_up()
+            self.parent_ui.simulator.clean_up()
 
             #Now update all the graphics.
-            self.parent_ui.update()
+            self.parent_ui.plot_graphs()
 
         
 

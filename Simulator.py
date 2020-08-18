@@ -152,12 +152,13 @@ class Simulator:
         
 
         mapping = [
-            str(self.core_suffix)  ,  
+            str(self.num_currents) ,
             str(self.tstop)        ,
             str(self.resting)      ,
             str(self.stim_interval),
             str(self.stim_number)  ,
             str(self.stim_start)   ,
+            str(self.num_currents)   
         ]
 
         with open(template_dir, 'r') as file:
@@ -166,10 +167,12 @@ class Simulator:
             output = open('core'+ str(self.core_suffix) +'.hoc' , 'w')
 
             for line in file:
-                
                 if '#' in line:
                     continue
-                elif '@' in line:
+                if '!' in line:
+                    line = line.replace('!',str(self.core_suffix))
+                
+                if '@' in line:
                     #Loop through and set all the parameters. 
                     for key in self.synapse_parameters:
                         output.write(line.replace('@',key).replace('%',str(self.synapse_parameters[key])))
@@ -179,7 +182,13 @@ class Simulator:
                     output.write(line.replace('*',mapping[core]))
                     core += 1
                 
-                
+                elif '^' in line:
+                    if '~' in line:
+                        for i,key in zip(range(self.num_currents),self.currents):
+                            output.write(line.replace('^',str(i)).replace('~',key))
+                    else:
+                        for i in range(self.num_currents):
+                            output.write(line.replace('^',str(i)))
                 else:
                     output.write(line)
 
@@ -187,13 +196,13 @@ class Simulator:
             file.close()
             
     def get_membrane(self):
-        return list(h.membrane)
+        return h.membrane.to_python()
 
     def get_input(self):
-        return list(h.input)
+        return h.input.to_python()
 
     def get_time(self):
-        return list(h.time)
+        return h.time.to_python()
     
     def update_data(self): 
         self.time = self.get_time()
@@ -203,7 +212,7 @@ class Simulator:
             self.currents[key] = self.get_synapse_current(i)
     
     def get_synapse_current(self, id):
-        return list(h.input[id])
+        return h.input[id].to_python()
 
     def initialize_simulator(self):
         h.load_file('init.hoc')
@@ -220,6 +229,7 @@ class Simulator:
     def clean_up(self):
         #Delete the previous core file.
         os.remove('core'+ str(self.core_suffix - 1) +'.hoc')
+        #print("Clean Up")
 
 
 

@@ -18,10 +18,16 @@
 #cell.soma vclamp = new SEClamp(0.5) 
 #cell.soma syn = new *(0.9)
 #nc = new NetCon(stim, syn, 0, 0, 1)
-#time.record(&t)
-#membrane.record(&cell.soma.v(0.5))
-#input[^].record(&syn.~)
-proc run*() {
+objectvar membraneVtime!
+objectvar time!
+objectvar currents![*]
+membraneVtime! = new Vector()
+time! = new Vector()
+currents![^] = new Vector()
+membraneVtime!.record(&cell.soma.v(0.5))
+time!.record(&t)
+currents![^].record(&syn.~)
+proc run!() {
     tstop = *
     v_init = * 
     vclamp.amp1 = v_init
@@ -31,5 +37,22 @@ proc run*() {
     stim.start = *
     syn.@ = %
     run()
-    printf("Run Complete\n")
+    time.resize(0)
+    membrane.resize(0)
+    input[^].resize(0)
+    for(x = 0; x < time!.size(); x = x + 1) {
+        time.append(time!.x[x])
+    }
+    for(x = 0; x < membraneVtime!.size(); x = x + 1) {
+        membrane.append(membraneVtime!.x[x])
+    }
+    for(i = 0; i < *; i = i + 1) {
+        for(x = 0; x < currents![i].size; x = x + 1) {
+            input[i].append(currents![i].x[x])
+        }
+    }
+    time!.resize(0)
+    membraneVtime!.resize(0)
+    currents![^].resize(0)
+    printf("Run ! Complete\n")
 }
