@@ -226,6 +226,9 @@ class StartPage(tk.Frame):
         #update simulator data.
         self.simulator.update_data()
 
+        self.memvtime.clear()
+        self.injvtime.clear()
+        
         self.memline = self.memvtime.plot(self.simulator.time,self.simulator.membrane_potential)
         
         for key in self.simulator.currents:
@@ -246,6 +249,8 @@ class StartPage(tk.Frame):
         for key,line in zip(self.simulator.currents, self.currentline):
             line.set_data(self.simulator.time, self.simulator.currents[key])
 
+        self.memcanvas.clear()
+        self.injcanvas.clear()
 
         self.memcanvas.draw()
         self.injcanvas.draw()
