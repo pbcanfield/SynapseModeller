@@ -228,29 +228,11 @@ class StartPage(tk.Frame):
 
         self.memvtime.clear()
         self.injvtime.clear()
-        
+
         self.memline = self.memvtime.plot(self.simulator.time,self.simulator.membrane_potential)
         
         for key in self.simulator.currents:
             self.currentline.append(self.injvtime.plot(self.simulator.time,self.simulator.currents[key]))
-
-        self.memcanvas.draw()
-        self.injcanvas.draw()
-
-
-
-    def update(self):
-
-        #update simulator data.
-        self.simulator.update_data()        
-
-        self.memline.set_data(self.simulator.time, self.simulator.membrane_potentia)
-
-        for key,line in zip(self.simulator.currents, self.currentline):
-            line.set_data(self.simulator.time, self.simulator.currents[key])
-
-        self.memcanvas.clear()
-        self.injcanvas.clear()
 
         self.memcanvas.draw()
         self.injcanvas.draw()
@@ -382,23 +364,16 @@ class ParameterPanel(tk.Frame):
             self.parent_ui.simulator.generate_core_init('template.tem')
             self.parent_ui.simulator.initialize_simulator()
 
-            #Now run the simulation.
-            self.parent_ui.simulator.generate_core_simulator('template.tem')
-            self.parent_ui.simulator.load_core()
-            self.parent_ui.simulator.run_simulation()
-            self.parent_ui.simulator.clean_up()
-
-            self.parent_ui.plot_graphs()            
             self.first_run = False
-        else:
-            #Now run the simulation.
-            self.parent_ui.simulator.generate_core_simulator('template.tem')
-            self.parent_ui.simulator.load_core()
-            self.parent_ui.simulator.run_simulation()
-            self.parent_ui.simulator.clean_up()
 
-            #Now update all the graphics.
-            self.parent_ui.plot_graphs()
+            
+        #Now run the simulation.
+        self.parent_ui.simulator.generate_core_simulator('template.tem')
+        self.parent_ui.simulator.load_core()
+        self.parent_ui.simulator.run_simulation()
+        self.parent_ui.simulator.clean_up()
+
+        self.parent_ui.plot_graphs()       
 
         
 
