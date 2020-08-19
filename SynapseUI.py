@@ -108,23 +108,22 @@ class StartPage(tk.Frame):
         self.browse_mod_button = tk.Button(self, text= 'Browse', command=lambda: self.browseFiles('Mod'))
 
         #Page layout.    
-        #3x4 (columns,rows)
     
         #Synapse selector
         self.synapse_label.grid(column=1,row=0, sticky='ne')
         self.browse_synapse_button.grid(column=2,row=0, sticky='ne')
 
+        #Synapse mod selector.
+        self.mod_label.grid(column=1,row=1, sticky='ne')
+        self.browse_mod_button.grid(column=2,row=1, sticky='ne')
+
         #HOC selector.
-        self.hoc_label.grid(column=1,row=1, sticky='ne')
-        self.browse_hoc_button.grid(column=2,row=1, sticky='ne')
+        self.hoc_label.grid(column=1,row=2, sticky='ne')
+        self.browse_hoc_button.grid(column=2,row=2, sticky='ne')
 
         #Mechanism selector.
-        self.mech_label.grid(column=1,row=2, sticky='ne')
-        self.browse_mech_button.grid(column=2,row=2, sticky='ne')
-
-        #Synapse mod selector.
-        self.mod_label.grid(column=1,row=3, sticky='ne')
-        self.browse_mod_button.grid(column=2,row=3, sticky='ne')
+        self.mech_label.grid(column=1,row=3, sticky='ne')
+        self.browse_mech_button.grid(column=2,row=3, sticky='ne')        
 
         #Membrane potential graph.
         self.memgraph = Figure(figsize=(5,2), dpi=100)
@@ -244,9 +243,11 @@ class ParameterPanel(tk.Frame):
 
     #GUI elements.
     run_button = None
+    clamp_button = None
 
     tstop_feild = None
     vinit_feild = None
+    clamp_field = None
 
     #Netstim feilds.
     stim_number_feild = None
@@ -269,6 +270,9 @@ class ParameterPanel(tk.Frame):
         #Create run button.
         self.run_button = tk.Button(self, text='Run', command=self.run_simulation)
         
+        #Create current clamp button.
+        
+
         #Create input fields for v_init and tstop.
         #tstop.
         tstop_label = tk.Label(self, text = 'tstop: ')

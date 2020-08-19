@@ -32,6 +32,9 @@ class Simulator:
 
     core_suffix = 0
 
+    isClamped = True
+    clamp_value = None
+
     '''
     Requires all 4 of these paremeters before generate_core_simulator is run.
     1)  The path to the cell template
